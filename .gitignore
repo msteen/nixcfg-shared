@@ -1,0 +1,15 @@
+*.crt
+*.csr
+*.gpg
+*.key
+*.ovpn
+*.pass
+*.pem
+*.sec
+*.sec.nix
+*.secrets
+*.token
+id_ed25519
+id_rsa
+moduli
+result

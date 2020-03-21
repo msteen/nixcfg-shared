@@ -1,0 +1,5 @@
+{
+  allowUnfree = true;
+  oraclejdk.accept_license = true;
+  pulseaudio = true;
+}
