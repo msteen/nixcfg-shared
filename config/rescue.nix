@@ -8,12 +8,12 @@ let
     ${ensureRoot}
 
     if (( $# < 1 )); then
-      ${bashConfirm "Are you sure you want to use $NIXOS_CONFIG as your config" "exit 0" "exit 1"}
+      ${bashConfirm "Are you sure you want to use '$NIXOS_CONFIG' as your config" "exit 0" "exit 1"}
     else
       export NIXOS_CONFIG="$1"
     fi
 
-    deps=$(nix-build --no-out-link ${../lib/bootloader-deps.nix})
+    deps=$(nix-build --no-out-link --expr 'with import <nixpkgs/nixos> { }; pkgs.bootloader-deps' --show-trace)
 
     mkdir /boot/rescue
     cp -p $deps/{kernel,initrd,kernel-params} /boot/rescue

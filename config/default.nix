@@ -179,10 +179,12 @@ addProfileConfig {
           "iputils" # collisions with inetutils
         ] // flip genAttrs (name: hiPrio super.${name}) [
           "inetutils" # collisions with nettools
-        ])
+        ] // {
+          bootloader-deps = super.callPackage ../pkgs/bootloader-deps { inherit config pkgs; };
+        })
       ];
 
-      environment.aliases = {
+      environment.shellAliases = {
         # If the last character of the alias value is a space or tab character,
         # then the next command word following the alias is also checked for alias expansion.
         sudo = "sudo ";

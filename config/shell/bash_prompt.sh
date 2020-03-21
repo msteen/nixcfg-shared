@@ -6,7 +6,7 @@ prompt() {
   # http://stackoverflow.com/questions/2575037/how-to-get-the-cursor-position-in-bash
   # http://stackoverflow.com/questions/19943482/configure-shell-to-always-print-prompt-on-new-line-like-zsh
   local newline_prompt
-  if command -v stty tput &>/dev/null; then
+  if command -v stty >/dev/null && command -v tput >/dev/null; then
     # Reset the standard input to the terminal.
     exec < /dev/tty
 
@@ -51,7 +51,7 @@ prompt() {
   # This is faster than the git-prompt script, because that will do a lot of additional checks,
   # and will write error messages to /dev/null just the same.
   local git_branch_prompt
-  if command -v git &>/dev/null; then
+  if command -v git >/dev/null; then
     local git_branch
     git_branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
     if test -n "$git_branch"; then

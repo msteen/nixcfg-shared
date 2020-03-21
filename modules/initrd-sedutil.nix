@@ -36,6 +36,8 @@ in {
   config = mkIf cfg.enable {
     boot.initrd = {
       extraUtilsCommands = ''
+        copy_bin_and_libs ${pkgs.utillinux}/sbin/blockdev
+        copy_bin_and_libs ${pkgs.utillinux}/sbin/lsblk
         copy_bin_and_libs ${pkgs.sedutil}/bin/getpasswd
         copy_bin_and_libs ${pkgs.sedutil}/bin/sedutil-cli
         cp -Lpnv ${pkgs.sedutil-scripts-unwrapped}/bin/* $out/bin

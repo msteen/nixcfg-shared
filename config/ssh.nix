@@ -27,7 +27,7 @@ in {
     ../modules/system-users.nix
   ];
 
-  environment.aliases = {
+  environment.shellAliases = {
     "unsafe-ssh" = "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null";
   };
 

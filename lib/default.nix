@@ -1,26 +1,40 @@
 let
-  channelRevs = {
-    "nixos-18.09"    = "a7e559a5504572008567383c3dc8e142fa7a8633";
-    "nixos-19.03"    = "34c7eb7545d155cc5b6f499b23a7cb1c96ab4d59";
-    "nixos-19.09"    = "ce9f1aaa39ee2a5b76a9c9580c859a74de65ead5";
-    "nixos-20.03"    = "da92e0566d1381184faae4f2c2a69f5ba2a2a08d";
-    "nixos-unstable" = "82b54d490663b6d87b7b34b9cfc0985df8b49c7d";
+  channelsMeta = {
+    "nixos-18.09" = {
+      rev = "a7e559a5504572008567383c3dc8e142fa7a8633";
+      sha256 = "16j95q58kkc69lfgpjkj76gw5sx8rcxwi3civm0mlfaxxyw9gzp6";
+    };
+    "nixos-19.03" = {
+      rev = "34c7eb7545d155cc5b6f499b23a7cb1c96ab4d59";
+      sha256 = "11z6ajj108fy2q5g8y4higlcaqncrbjm3dnv17pvif6avagw4mcb";
+    };
+    "nixos-19.09" = {
+      rev = "ce9f1aaa39ee2a5b76a9c9580c859a74de65ead5";
+      sha256 = "1s2b9rvpyamiagvpl5cggdb2nmx4f7lpylipd397wz8f0wngygpi";
+    };
+    "nixos-20.03" = {
+      rev = "da92e0566d1381184faae4f2c2a69f5ba2a2a08d";
+      sha256 = "0kavxgmxkfgz4fhgz8b0a91b4x2nzpdwlps8hlx050d65s34hvd1";
+    };
+    "nixos-unstable" = {
+      rev = "ddf87fb1baf8f5022281dad13fb318fa5c17a7c6";
+      sha256 = "1xd6lz11lp7gqp00qfkk9h4nj4hvigm2xk1gi6css0r7sjw1chg4";
+    };
   };
 
-  channelNames = builtins.attrNames channelRevs;
+  channelNames = builtins.attrNames channelsMeta;
 
-  channelFetchGitArgs = builtins.listToAttrs (map (name: {
+  channelFetchTarballArgs = builtins.listToAttrs (map (name: with channelsMeta.${name}; {
     inherit name;
     value = {
-      url = "https://github.com/NixOS/nixpkgs.git";
-      ref = "refs/heads/${name}";
-      rev = channelRevs.${name};
+      url = "https://github.com/NixOS/nixpkgs/tarball/${rev}";
+      inherit sha256;
     };
   }) channelNames);
 
   channels = builtins.listToAttrs (map (name: {
     inherit name;
-    value = builtins.fetchGit channelFetchGitArgs.${name};
+    value = fetchTarball channelFetchTarballArgs.${name};
   }) channelNames);
 
   lastStableChannel = builtins.foldl' (stableChannel: channel:
@@ -28,17 +42,16 @@ let
   ) null channelNames;
 
   lastStableLib = import "${channels.${lastStableChannel}}/lib";
-  lastStableLibNix = with channelFetchGitArgs.${lastStableChannel}; ''
-    import "''${builtins.fetchGit {
+  lastStableLibNix = with channelFetchTarballArgs.${lastStableChannel}; ''
+    import "''${fetchTarball {
       url = "${url}";
-      ref = "${ref}";
-      rev = "${rev}";
+      sha256 = "${sha256}";
     }}/lib"'';
 
   overlay = self: super: {
     lib = self;
 
-    inherit channels lastStableChannel lastStableLib lastStableLibNix;
+    inherit channels channelsMeta lastStableChannel lastStableLib lastStableLibNix;
 
     securePath = path:
       let
@@ -50,9 +63,9 @@ let
     nixosProfileImports = profilePath: with self;
       let
         pkgsConfig = { config, ... }: {
-          system.nixpkgsOverlayFiles =
+          nixpkgs.overlays =
             let p = config.path (profilePath + /pkgs/overlay.nix);
-            in mkIf (pathExists p) p;
+            in optional (pathExists p) (import p);
         };
 
         modulesImports =

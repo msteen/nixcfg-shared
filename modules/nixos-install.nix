@@ -17,9 +17,7 @@ let
       utillinux
     ])}
 
-    deps=${import ../lib/bootloader-deps.nix {
-      inherit config;
-      inherit pkgs;
+    deps=${pkgs.bootloader-deps.override {
       initialRamdisk = config.system.build.netbootRamdisk;
     }}
 

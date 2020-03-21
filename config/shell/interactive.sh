@@ -197,7 +197,7 @@ mkinstaller() {
     echo "Usage: mkinstaller /path/to/installer.nix [/dev/target]" >&2
     return 1
   fi
-  iso=$(NIXOS_CONFIG=$1 nix-build '<nixpkgs/nixos>' --no-out-link --attr config.system.build.isoImage) &&
+  local iso=$(NIXOS_CONFIG=$1 nix-build '<nixpkgs/nixos>' --no-out-link --attr config.system.build.isoImage) &&
   echo "$iso" &&
   if (( $# >= 2 )); then
     dd-iso "$iso" "$2"

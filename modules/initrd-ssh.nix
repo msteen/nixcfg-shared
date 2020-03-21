@@ -23,7 +23,7 @@ let
 
 in {
   disabledModules = [ "system/boot/initrd-ssh.nix" ];
-  
+
   options.boot.initrd.network.ssh = with types; {
     enable = mkEnableOption "SSHD inside of the initial ramdisk";
 
@@ -95,6 +95,7 @@ in {
 
       network = {
         enable = true;
+
         postCommands = ''
           extraUtils=$(dirname $(readlink /bin))
 
@@ -111,11 +112,12 @@ in {
           # Make the sshd user's home folder.
           mkdir -p /var/empty
 
+          mkdir -p /etc/ssh
           cp $extraUtils/etc/ssh/moduli /etc/ssh/moduli
 
-          ${optionalString (!config.boot.loader.supportsInitrdSecrets) (concatStrings (map (name: ''
+          ${concatStrings (map (name: ''
             chmod 400 /etc/ssh/${name}
-          '') (attrNames cfg.hostKeys)))}
+          '') (attrNames cfg.hostKeys))}
 
           mkdir -p /root/.ssh
           ${concatStrings (map (key: ''
@@ -128,6 +130,7 @@ in {
 
           /bin/sshd -f ${sshdConfig}
         '';
+
         ssh.moduliFile = mkDefault "${pkgs.openssh}/etc/ssh/moduli";
       };
 

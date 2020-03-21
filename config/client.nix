@@ -39,7 +39,7 @@ with lib;
   environment.variables."DISPLAY" = ":0.0";
 
   # Use clipboard as the default X selection.
-  environment.aliases."xclip" = "xclip -selection c";
+  environment.shellAliases."xclip" = "xclip -selection c";
 
   # Do not offer to mount encrypted partitions.
   services.udev.extraRules = ''

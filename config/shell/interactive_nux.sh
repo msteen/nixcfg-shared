@@ -209,7 +209,7 @@ EOF
   if [[ -n $expr ]]; then
     expr=$(nix eval "${args[@]}" "(with import <nixpkgs/nixos> { configuration = $configuration; }; with config.cfglib; $expr)") || return 1
     if [[ $format == nix ]]; then
-      hnix --eval --strict --expr "$expr" 2>/dev/null || echo "$expr"
+      echo "$expr"
     elif [[ $format == json ]]; then
       echo "$expr" | jq
     elif [[ $format == raw ]]; then

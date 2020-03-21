@@ -1,4 +1,5 @@
-{ lib, writeBashBin, ensureRoot, bashConfirm, coreutils, utillinux, bash, gptfdisk, syslinux, dosfstools, nix }:
+{ lib, writeBashBin, ensureRoot, bashConfirm
+, coreutils, utillinux, bash, gptfdisk, syslinux, dosfstools, nix, git }:
 
 with lib;
 
@@ -13,11 +14,20 @@ writeBashBin "mklinuxpba" ''
     export NIXOS_CONFIG="$1"
   fi
 
-  export PATH=${makeBinPath [ coreutils utillinux gptfdisk syslinux dosfstools nix ]}
+  export PATH=${makeBinPath [ coreutils utillinux gptfdisk syslinux dosfstools nix git ]}
 
-  deps=$(nix-build --no-out-link ${../../lib/bootloader-deps.nix} --show-trace)
+  export NIXOS_EXTRA_MODULE_PATH=$(nix-build --no-out-link --expr \
+  'with import <nixpkgs> { }; pkgs.writeText "dummy-root-file-system.nix" '"'''"'
+    { lib, ... }: {
+      fileSystems."/" = lib.mkDefault {
+        device = "/dev/null";
+      };
+      boot.initrd.sedutil.enable = true;
+    }
+  '"'''")
+  deps=$(nix-build --no-out-link --expr 'with import <nixpkgs/nixos> { }; pkgs.bootloader-deps' --show-trace)
   if (( $? > 0 )) || [[ -z $deps ]]; then
-    echo "Failed to build the kernel or initial ramdisk." 1>&2
+    echo "Failed to build the kernel or initial ramdisk." >&2
     exit 1
   fi
 
@@ -37,8 +47,9 @@ writeBashBin "mklinuxpba" ''
   mount "''${loopdev}p1" "$mnt"
 
   cp $deps/{kernel,initrd} "$mnt"
+
   if [[ -f $deps/append-initrd-secrets ]]; then
-    $(< $deps/append-initrd-secrets) "$mnt/initrd"
+    $deps/append-initrd-secrets "$mnt/initrd"
   fi
 
   # BIOS (the other files are installed via `syslinux --install`)

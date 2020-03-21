@@ -44,12 +44,19 @@ in channels // {
 
   ensureRoot = ''
     if [ $(id -u) -ne 0 ]; then
-      if command -v sudo > /dev/null 2>&1; then
+      if command -v sudo >/dev/null 2>&1; then
         exec sudo "$0" "$@"
       else
-        echo 'You must be the root user to run this script' 1>&2
+        echo "This script should be run as root." >&2
         exit 1
       fi
+    fi
+  '';
+
+  ensureNotRoot = ''
+    if [ $(id -u) -eq 0 ]; then
+      echo "This script should not be run as root." >&2
+      exit 1
     fi
   '';
 
@@ -102,13 +109,6 @@ in channels // {
   nix-explorer = super.callPackage /home/matthijs/fork/nix-explorer { };
 
   test = super.callPackage ./test { };
-
-  nix-gitignore = super.callPackage (self.fetchFromGitHub {
-    owner = "siers";
-    repo = "nix-gitignore";
-    rev = "eba31084240f510ba7ec60a611a52826211ecbab";
-    sha256 = "04f920mdppisvqf25b7vwpz1caq91sj6xa4a48nwwrygzxhjg3v7";
-  }) { };
 
   # To allow other users access to a FUSE file system, you need to specify the `allow_other` option.
   # https://unix.stackexchange.com/questions/59685/sshfs-mount-sudo-gets-permission-denied/59695#59695

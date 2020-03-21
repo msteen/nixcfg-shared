@@ -7,14 +7,6 @@ let
 
 in {
   options.environment = with types; {
-    aliases = mkOption {
-      default = {};
-      type = attrsOf str;
-      description = ''
-        An attribute set that maps aliases to commands.
-      '';
-    };
-
     sudoAliases = mkOption {
       default = [];
       type = listOf str;
@@ -24,8 +16,7 @@ in {
     };
   };
 
-  config = mkIf (cfg.aliases != {} || cfg.sudoAliases != []) {
-    environment.shellAliases = genAttrs cfg.sudoAliases (alias: "sudo ${alias}")
-      // mapAttrs (name: replaceStrings ["'"] ["'\\''"]) cfg.aliases;
+  config = mkIf (cfg.sudoAliases != []) {
+    environment.shellAliases = genAttrs cfg.sudoAliases (alias: "sudo ${alias}");
   };
 }

@@ -1,0 +1,2 @@
+# nix eval --raw '(with import <nixpkgs/nixos> { }; builtins.substring 0 7 config.nixpkgs.channelRev)'
+exit 1

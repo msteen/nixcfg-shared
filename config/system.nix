@@ -16,14 +16,6 @@ in {
         '';
       };
 
-      nixpkgsOverlayFiles = mkOption {
-        type = loeOf path;
-        default = [];
-        description = ''
-          List of Nixpkgs overlay file paths.
-        '';
-      };
-
       nixosConfig = mkOption {
         type = nullOr path;
         default = null;
@@ -43,16 +35,7 @@ in {
       environment.etc."nix/nixpkgs-config.nix".source = toString cfg.nixpkgsConfig;
       nixpkgs.config = import cfg.nixpkgsConfig;
     }
-    {
-      nix.nixPath = [ "nixpkgs-overlays=/etc/nixpkgs/overlays" ];
-      nixpkgs.overlays = map import cfg.nixpkgsOverlayFiles;
-      environment.etc = listToAttrs (imap1 (i: overlayFile:
-        # If we do not call `toString` on `overlayFile` the relative paths will break.
-        nameValuePair "nixpkgs/overlays/overlay${toString i}.nix" { source = toString overlayFile; }
-      ) cfg.nixpkgsOverlayFiles);
-    }
     (mkIf (cfg.nixosConfig != null) {
-      environment.sessionVariables.NIXOS_CONFIG = toString cfg.nixosConfig;
       environment.etc."nixos/configuration.nix".source = toString cfg.nixosConfig;
       nix.nixPath = [ "nixos-config=${toString cfg.nixosConfig}" ];
     })
